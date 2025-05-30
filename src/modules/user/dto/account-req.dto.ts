@@ -1,10 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsString } from 'class-validator';
 
 export class CreateAccountDto {
   @ApiProperty({
     description: '邮箱',
     example: '123456@qq.com',
   })
+  @IsString()
+  @IsEmail()
   email: string;
 
   @ApiProperty({
@@ -17,7 +20,7 @@ export class CreateAccountDto {
     description: '头像',
     example: 'https://www.baidu.com/img/bd_logo1.png',
   })
-  avatar: string;
+  avatar?: string;
 
   @ApiProperty({
     description: '简介',

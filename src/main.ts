@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { swaggerSetup } from '@/swagger-setup';
 import { ConfigService } from '@nestjs/config';
-import { Logger, VersioningType } from '@nestjs/common';
+import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,6 +12,13 @@ async function bootstrap() {
   if (cors) {
     app.enableCors();
   }
+  // 全局使用管道，用于 Controller 层参数校验
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
   app.enableVersioning({
     defaultVersion: '1',
     type: VersioningType.URI,

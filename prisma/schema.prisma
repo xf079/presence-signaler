@@ -16,7 +16,9 @@ model User {
 
   online Boolean @default(false)
 
-  room Room[]
+  friend       FriendRelationship[]
+  room         Room[]
+  notification Notification[]
 
   lastLogin   DateTime?
   lastLoginIp String?
@@ -30,15 +32,47 @@ model User {
   @@map("users")
 }
 
-model Room {
-  id    Int    @id @default(autoincrement())
-  name  String
-  users User[]
+model FriendRelationship {
+  id Int @id @default(autoincrement())
+
+  user   User @relation("UserToFriend", fields: [userId], references: [id])
+  userId Int
+
+  friend   User @relation(fields: [friendId], references: [id])
+  friendId Int
 
   deleted   Boolean   @default(false)
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
+  @@map("friend_relationships")
+}
+
+model Room {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  users User[]
+
+  deleted   Boolean   @default(false)
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@map("rooms")
+}
+
+model Notification {
+  id      Int     @id @default(autoincrement())
+  userId  Int
+  user    User    @relation(fields: [userId], references: [id])
+  type    String
+  read    Boolean @default(false)
+  message String?
+
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
 }

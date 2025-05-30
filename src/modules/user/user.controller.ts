@@ -7,7 +7,7 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { ApiProperty, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateAccountDto, UpdateAccountDto } from './dto/account-req.dto';
 
@@ -16,30 +16,33 @@ import { CreateAccountDto, UpdateAccountDto } from './dto/account-req.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @ApiProperty({
-    description: '创建用户',
-    type: CreateAccountDto,
+  @ApiOperation({
+    summary: '创建用户',
   })
   @Post()
   create(@Body() createAccountDto: CreateAccountDto) {
     return this.userService.create(createAccountDto);
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
-  }
-
-  @Get(':id')
+  @ApiOperation({
+    summary: '获取用户详情',
+  })
+  @Get('profile')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
   }
 
+  @ApiOperation({
+    summary: '更新用户',
+  })
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto) {
     return this.userService.update(+id, updateAccountDto);
   }
 
+  @ApiOperation({
+    summary: '删除用户',
+  })
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
