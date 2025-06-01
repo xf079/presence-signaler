@@ -21,14 +21,14 @@ export class PasswordUtil {
   /**
    * 默认的盐轮数
    */
-  private readonly DEFAULT_SALT_ROUNDS = 10;
+  private static readonly DEFAULT_SALT_ROUNDS = 10;
 
   /**
    * 生成盐值
    * @param saltRounds 盐轮数，默认为10
    * @returns 生成的盐值
    */
-  async generateSalt(saltRounds = this.DEFAULT_SALT_ROUNDS) {
+  static async generateSalt(saltRounds = this.DEFAULT_SALT_ROUNDS) {
     return bcrypt.genSalt(saltRounds);
   }
 
@@ -38,7 +38,7 @@ export class PasswordUtil {
    * @param salt 盐值
    * @returns 加密后的密码
    */
-  async hashWithSalt(password: string, salt: string): Promise<string> {
+  static async hashWithSalt(password: string, salt: string): Promise<string> {
     return bcrypt.hash(password, salt);
   }
 
@@ -48,7 +48,7 @@ export class PasswordUtil {
    * @param saltRounds 盐轮数，默认为10
    * @returns 加密结果，包含加密后的密码和盐值
    */
-  async hashWithSaltResult(
+  static async hashWithSaltResult(
     password: string,
     saltRounds = this.DEFAULT_SALT_ROUNDS,
   ): Promise<PasswordHashResult> {
@@ -63,7 +63,7 @@ export class PasswordUtil {
    * @param saltRounds 盐轮数，默认为10
    * @returns 加密后的密码
    */
-  async hash(
+  static async hash(
     password: string,
     saltRounds = this.DEFAULT_SALT_ROUNDS,
   ): Promise<string> {
@@ -76,18 +76,21 @@ export class PasswordUtil {
    * @param hashedPassword 加密后的密码
    * @returns 是否匹配
    */
-  async compare(password: string, hashedPassword: string): Promise<boolean> {
+  static async compare(
+    password: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
     return bcrypt.compare(password, hashedPassword);
   }
 
   /**
    * 使用指定盐值验证密码
-   * @param password 明文密码
-   * @param hashedPassword 加密后的密码
-   * @param salt 盐值
+   * @param password {string} 明文密码
+   * @param hashedPassword {string} 加密后的密码
+   * @param salt {string} 盐值
    * @returns 是否匹配
    */
-  async compareWithSalt(
+  static async compareWithSalt(
     password: string,
     hashedPassword: string,
     salt: string,

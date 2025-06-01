@@ -3,6 +3,7 @@ import { PrismaService } from '@/shared/prisma/prisma.service';
 import { CacheService } from '@/shared/cache/cache.service';
 import { CreateAccountDto, UpdateAccountDto } from './dto/account-req.dto';
 import ApiException from '@/common/exceptions/api.exception';
+import { PasswordUtil } from '@/common/utils/password.util';
 
 @Injectable()
 export class UserService {
@@ -16,9 +17,20 @@ export class UserService {
    * @param createAccountDto
    */
   async create(createAccountDto: CreateAccountDto) {
+    const { hash, salt } = await PasswordUtil.hashWithSaltResult(
+      createAccountDto.password,
+    );
     await this.prisma.user.create({
       data: {
         ...createAccountDto,
+        password: hash,
+        salt,
+      },
+      omit: {
+        password: true,
+        salt: true,
+        deleted: true,
+        deletedAt: true,
       },
     });
   }
@@ -31,14 +43,41 @@ export class UserService {
       where: {
         deleted: false,
       },
+      omit: {
+        password: true,
+        salt: true,
+        deleted: true,
+        deletedAt: true,
+      },
     });
+  }
+
+  async findByEmail(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email,
+        AND: [
+          {
+            deleted: false,
+          },
+        ],
+      },
+      omit: {
+        deleted: true,
+        deletedAt: true,
+      },
+    });
+    if (!user) {
+      throw new ApiException('用户不存在');
+    }
+    return user;
   }
 
   /**
    * 查询单个用户
    * @param id
    */
-  async findOne(id: number) {
+  async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
       where: {
         id,
@@ -47,6 +86,12 @@ export class UserService {
             deleted: false,
           },
         ],
+      },
+      omit: {
+        password: true,
+        salt: true,
+        deleted: true,
+        deletedAt: true,
       },
     });
     if (!user) {
@@ -60,7 +105,7 @@ export class UserService {
    * @param id
    * @param updateAccountDto
    */
-  async update(id: number, updateAccountDto: UpdateAccountDto) {
+  async update(id: string, updateAccountDto: UpdateAccountDto) {
     return this.prisma.user.update({
       where: {
         id,
@@ -73,6 +118,12 @@ export class UserService {
       data: {
         ...updateAccountDto,
       },
+      omit: {
+        password: true,
+        salt: true,
+        deleted: true,
+        deletedAt: true,
+      },
     });
   }
 
@@ -80,7 +131,7 @@ export class UserService {
    * 删除用户
    * @param id
    */
-  remove(id: number) {
+  remove(id: string) {
     return this.prisma.user.update({
       where: {
         id,
@@ -88,6 +139,12 @@ export class UserService {
       data: {
         deleted: true,
         deletedAt: new Date(),
+      },
+      omit: {
+        password: true,
+        salt: true,
+        deleted: true,
+        deletedAt: true,
       },
     });
   }

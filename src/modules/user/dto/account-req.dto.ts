@@ -27,6 +27,12 @@ export class CreateAccountDto {
     example: '我是一个程序员',
   })
   bio: string;
+
+  @ApiProperty({
+    description: '密码',
+    example: '123456',
+  })
+  password: string;
 }
 
 export class UpdateAccountDto {

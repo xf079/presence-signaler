@@ -5,9 +5,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthorizeService } from './authorize.service';
 import { AuthorizeController } from './authorize.controller';
 import { TokenService } from './services/token.service';
+import { CodeService } from './services/code.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { LocalStrategy } from './strategies/local.strategy';
 import { SocketStrategy } from './strategies/socket.strategy';
+import { UserService } from '../user/user.service';
 
 @Module({
   imports: [
@@ -24,7 +25,14 @@ import { SocketStrategy } from './strategies/socket.strategy';
     }),
   ],
   controllers: [AuthorizeController],
-  providers: [AuthorizeService, TokenService, JwtStrategy, LocalStrategy, SocketStrategy],
-  exports: [TokenService, JwtStrategy, LocalStrategy, SocketStrategy],
+  providers: [
+    AuthorizeService,
+    TokenService,
+    JwtStrategy,
+    SocketStrategy,
+    CodeService,
+    UserService,
+  ],
+  exports: [TokenService, JwtStrategy, SocketStrategy],
 })
 export class AuthorizeModule {}

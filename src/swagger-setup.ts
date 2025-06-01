@@ -6,9 +6,9 @@ export function swaggerSetup(
   app: INestApplication,
   configService: ConfigService,
 ): void {
-  const path = configService.get<string>('APP_SWAGGER_PATH', 'api-docs');
-  const HOST = configService.get<string>('APP_HOST') || '127.0.0.1';
-  const PORT = configService.get<number>('APP_PORT') || 8081;
+  const path = configService.get<string>('SWAGGER_PATH', 'api-docs');
+  const HOST = configService.get<string>('HOST') || '127.0.0.1';
+  const PORT = configService.get<number>('PORT') || 8081;
   const apiJsonUrl = 'api-json';
   const documentBuilder = new DocumentBuilder()
     .setTitle('Presence Signaler API')

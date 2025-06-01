@@ -1,6 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { Request } from 'express';
-import { JwtPayload } from '../services/token.service';
+import { JwtPayload } from '@/modules/authorize/services/token.service';
 
 /**
  * 当前用户装饰器

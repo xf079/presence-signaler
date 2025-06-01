@@ -8,7 +8,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const configService = app.get(ConfigService);
-  const cors = configService.get<boolean>('APP_CORS');
+  const cors = configService.get<boolean>('CORS');
   if (cors) {
     app.enableCors();
   }
@@ -25,8 +25,8 @@ async function bootstrap() {
   });
   app.setGlobalPrefix('api', { exclude: ['sitemap.xml'] });
 
-  const HOST = configService.get<string>('APP_HOST') || '127.0.0.1';
-  const PORT = configService.get<number>('APP_PORT') || 8081;
+  const HOST = configService.get<string>('HOST') || '127.0.0.1';
+  const PORT = configService.get<number>('PORT') || 8081;
 
   swaggerSetup(app, configService);
 

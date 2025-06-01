@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { JwtPayload } from '../services/token.service';
+import { JwtPayload } from '@/modules/authorize/services/token.service';
 
 /**
  * WebSocket当前用户装饰器

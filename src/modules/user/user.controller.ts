@@ -7,7 +7,7 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateAccountDto, UpdateAccountDto } from './dto/account-req.dto';
 
@@ -19,7 +19,7 @@ export class UserController {
   @ApiOperation({
     summary: '创建用户',
   })
-  @Post()
+  @Post('create')
   create(@Body() createAccountDto: CreateAccountDto) {
     return this.userService.create(createAccountDto);
   }
@@ -27,24 +27,37 @@ export class UserController {
   @ApiOperation({
     summary: '获取用户详情',
   })
-  @Get('profile')
+  @ApiParam({
+    name: 'id',
+    description: '用户id',
+  })
+  @Get('profile/:id')
   findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+    console.log(id);
+    return this.userService.findOne(id);
   }
 
   @ApiOperation({
     summary: '更新用户',
   })
-  @Patch(':id')
+  @ApiParam({
+    name: 'id',
+    description: '用户id',
+  })
+  @Patch('update/:id')
   update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto) {
-    return this.userService.update(+id, updateAccountDto);
+    return this.userService.update(id, updateAccountDto);
   }
 
   @ApiOperation({
     summary: '删除用户',
   })
-  @Delete(':id')
+  @ApiParam({
+    name: 'id',
+    description: '用户id',
+  })
+  @Delete('delete/:id')
   remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+    return this.userService.remove(id);
   }
 }

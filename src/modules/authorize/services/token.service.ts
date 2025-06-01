@@ -28,13 +28,11 @@ export class TokenService {
       sub: userId,
       email,
     };
-    const appJwtExpire = this.configService.get<number>('APP_JWT_EXPIRE');
-    const appJwtRefresh = this.configService.get<number>(
-      'APP_JWT_REFRESH_EXPIRE',
-    );
+    const appJwtExpire = this.configService.get<number>('JWT_EXPIRE');
+    const appJwtRefresh = this.configService.get<number>('JWT_REFRESH_EXPIRE');
 
     const accessToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>('APP_JWT_SECRET'),
+      secret: this.configService.get<string>('JWT_SECRET'),
       expiresIn: appJwtExpire,
     });
 
@@ -43,7 +41,7 @@ export class TokenService {
         sub: userId,
       },
       {
-        secret: this.configService.get<string>('APP_JWT_REFRESH_SECRET'),
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         expiresIn: appJwtRefresh,
       },
     );
@@ -76,7 +74,7 @@ export class TokenService {
       const payload: JwtPayload = await this.jwtService.verifyAsync(
         refreshToken,
         {
-          secret: this.configService.get<string>('APP_JWT_REFRESH_SECRET'),
+          secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         },
       );
 
@@ -104,7 +102,7 @@ export class TokenService {
   async verifyToken(token: string): Promise<JwtPayload> {
     try {
       return await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get<string>('APP_JWT_SECRET'),
+        secret: this.configService.get<string>('JWT_SECRET'),
       });
     } catch (error) {
       console.log(error);

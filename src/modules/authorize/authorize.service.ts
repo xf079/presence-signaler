@@ -1,83 +1,97 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { AuthorizeReqDto } from './dto/authorize-req.dto';
-import { UpdateAuthorizeDto } from './dto/update-authorize.dto';
-import { LoginDto, LoginResponseDto } from './dto/login.dto';
+import { PasswordUtil } from '@/common/utils/password.util';
+import ApiException from '@/common/exceptions/api.exception';
+import { PrismaService } from '@/shared/prisma/prisma.service';
+import { CacheService } from '@/shared/cache/cache.service';
+import { UserService } from '@/modules/user/user.service';
+import {
+  LoginDto,
+  RefreshTokenDto,
+  RegisterDto,
+} from './dto/authorize-req.dto';
 import { JwtPayload, TokenService } from './services/token.service';
+import { CodeService } from './services/code.service';
 
 @Injectable()
 export class AuthorizeService {
-  constructor(private readonly tokenService: TokenService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cache: CacheService,
+    private readonly codeService: CodeService,
+    private readonly tokenService: TokenService,
+    private readonly userService: UserService,
+  ) {}
 
   /**
-   * 用户登录
+   * 注册用户
+   * @param token 邮箱校验token
+   * @param password 密码
+   * @param confirmPassword 确认密码
    */
-  async login(loginDto: LoginDto): Promise<LoginResponseDto> {
-    // 这里应该验证用户凭据，例如从数据库查询用户信息
-    // 为了演示，这里使用硬编码的用户信息
-    const { username, password } = loginDto;
-    
-    // 模拟用户验证逻辑
-    if (username === 'admin' && password === 'password') {
-      const payload: JwtPayload = {
-        sub: 1,
-        username: 'admin',
-        email: 'admin@example.com',
-      };
-      
-      const tokenResponse = this.tokenService.generateAccessToken(payload);
-      
-      return {
-        ...tokenResponse,
-        user: {
-          id: payload.sub,
-          username: payload.username,
-          email: payload.email,
-        },
-      };
+  async register(data: RegisterDto) {
+    if (data.password !== data.confirmPassword) {
+      throw new ApiException(`500:两次密码不一致`);
     }
-    
-    throw new UnauthorizedException('Invalid credentials');
+    console.log(data);
+    const exitsCode = await this.codeService.validateCode(
+      'signup',
+      data.email,
+      data.code,
+    );
+    if (!exitsCode) {
+      throw new ApiException(`500:验证码错误`);
+    }
+
+    await this.userService.create({
+      avatar: '',
+      bio: '',
+      name: data.email,
+      email: data.email,
+      password: data.password,
+    });
   }
 
   /**
-   * 为已验证的用户生成token
+   * JWT登录
+   * @param email 邮箱
+   * @param password 密码
+   * @returns JWT令牌
    */
-  async generateTokenForUser(user: any): Promise<LoginResponseDto> {
-    const payload: JwtPayload = {
-      sub: user.id,
-      username: user.username,
-      email: user.email,
-    };
-    
-    const tokenResponse = this.tokenService.generateAccessToken(payload);
-    
-    return {
-      ...tokenResponse,
-      user: {
-        id: payload.sub,
-        username: payload.username,
-        email: payload.email,
-      },
-    };
+  async login(data: LoginDto) {
+    console.log(data);
+    const user = await this.userService.findByEmail(data.email);
+
+    if (!user) {
+      throw new UnauthorizedException('用户名或密码错误');
+    }
+
+    const isPasswordValid = await PasswordUtil.compareWithSalt(
+      data.password,
+      user.password,
+      user.salt,
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('用户名或密码错误');
+    }
+
+    return this.tokenService.generateTokens(String(user.id), user.email);
   }
 
-  create(createAuthorizeDto: AuthorizeReqDto) {
-    return 'This action adds a new authorize';
+  /**
+   * 刷新令牌
+   * @param refreshToken 刷新令牌
+   * @returns 新的令牌
+   */
+  async refreshToken(refresh: RefreshTokenDto) {
+    return this.tokenService.refreshToken(refresh.refreshToken);
   }
 
-  findAll(user?: JwtPayload) {
-    return `This action returns all authorize for user: ${user?.username || 'anonymous'}`;
-  }
-
-  findOne(id: number, user?: JwtPayload) {
-    return `This action returns a #${id} authorize for user: ${user?.username || 'anonymous'}`;
-  }
-
-  update(id: number, updateAuthorizeDto: UpdateAuthorizeDto, user?: JwtPayload) {
-    return `This action updates a #${id} authorize by user: ${user?.username || 'anonymous'}`;
-  }
-
-  remove(id: number, user?: JwtPayload) {
-    return `This action removes a #${id} authorize by user: ${user?.username || 'anonymous'}`;
+  /**
+   * 登出
+   * @param userId 用户ID
+   */
+  async logout(user: JwtPayload) {
+    await this.tokenService.revokeTokens(user.sub);
   }
 }
